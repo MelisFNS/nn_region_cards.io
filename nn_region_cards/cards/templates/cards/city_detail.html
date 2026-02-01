@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}{{ card.title }}{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-7">
+
+    {# Кнопки для всех авторизованных #}
+    {% if user.is_authenticated %}
+      <div class="mb-3 d-flex gap-2">
+        <a class="btn btn-sm btn-outline-dark" href="{% url 'city_edit' card.slug %}">
+          ✏️ Редактировать
+        </a>
+
+        <form method="post" action="{% url 'city_delete' card.slug %}"
+              onsubmit="return confirm('Точно удалить карточку?');">
+          {% csrf_token %}
+          <button class="btn btn-sm btn-outline-danger" type="submit">
+            🗑 Удалить
+          </button>
+        </form>
+      </div>
+    {% endif %}
+
+    <div class="card border-0 soft-shadow">
+      {% if card.image %}
+        <img src="{{ card.image.url }}" class="card-img-top"
+             style="height:320px; object-fit:cover;" alt="{{ card.title }}">
+      {% endif %}
+
+      <div class="card-body p-4">
+        <h1 class="h3 mb-1">{{ card.title }}</h1>
+
+        {% if card.region %}
+          <div class="text-muted mb-2">{{ card.region }}</div>
+        {% endif %}
+
+        <p class="lead">{{ card.short_description }}</p>
+
+        <div class="mt-3">
+          {{ card.content|linebreaks }}
+        </div>
+
+        <div class="small text-muted mt-4">
+          Создано: {{ card.created_at|date:"d.m.Y" }}
+          {% if card.updated_at %}
+            · Обновлено: {{ card.updated_at|date:"d.m.Y" }}
+          {% endif %}
+        </div>
+
+        <div class="small text-muted mt-2">
+          👁 Просмотры: {{ card.views_count }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    {% if card.lat and card.lon %}
+      <div class="card border-0 soft-shadow">
+        <div class="card-body p-3">
+          <h2 class="h5">Расположение на карте</h2>
+
+          <div id="map" style="height: 300px; border-radius: 12px;"></div>
+
+          <div class="d-flex gap-2 mt-2">
+            <a class="btn btn-sm btn-outline-secondary"
+               target="_blank"
+               href="https://www.google.com/maps?q={{ card.lat }},{{ card.lon }}">
+              Google Maps
+            </a>
+
+            <a class="btn btn-sm btn-outline-secondary"
+               target="_blank"
+               href="https://yandex.ru/maps/?pt={{ card.lon }},{{ card.lat }}&z=10&l=map">
+              Яндекс.Карты
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        const lat = {{ card.lat }};
+        const lon = {{ card.lon }};
+
+        const map = L.map('map').setView([lat, lon], 11);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '&copy; OpenStreetMap'
+        }).addTo(map);
+
+        L.marker([lat, lon]).addTo(map)
+          .bindPopup("{{ card.title|escapejs }}")
+          .openPopup();
+      </script>
+    {% else %}
+      <div class="alert alert-secondary">
+        Для этого города не указаны координаты.
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

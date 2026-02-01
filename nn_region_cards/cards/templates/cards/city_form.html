@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  {% if mode == "edit" %}Редактировать статью{% else %}Создать статью{% endif %}
+{% endblock %}
+
+{% block content %}
+<h2 class="mb-3">
+  {% if mode == "edit" %}Редактировать статью о городе{% else %}Создать статью о городе{% endif %}
+</h2>
+
+<form method="POST" enctype="multipart/form-data" class="card p-3 soft-shadow border-0">
+  {% csrf_token %}
+
+  <div class="mb-3">
+    <label class="form-label">Название города</label>
+    <input type="text" class="form-control" name="title" required value="{{ card.title|default:'' }}">
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Регион</label>
+    <input type="text" class="form-control" name="region" value="{{ card.region|default:'' }}">
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Краткое описание</label>
+    <input type="text" class="form-control" name="short_description" value="{{ card.short_description|default:'' }}">
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Содержание</label>
+    <textarea class="form-control" name="content" rows="6">{{ card.content|default:'' }}</textarea>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Население</label>
+    <input type="number" class="form-control" name="population" value="{{ card.population|default:'' }}">
+  </div>
+
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <label class="form-label">Широта</label>
+      <input type="number" step="any" class="form-control" name="lat" value="{{ card.lat|default:'' }}">
+    </div>
+    <div class="col-md-6 mb-3">
+      <label class="form-label">Долгота</label>
+      <input type="number" step="any" class="form-control" name="lon" value="{{ card.lon|default:'' }}">
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Изображение</label>
+    <input type="file" class="form-control" name="image">
+    {% if mode == "edit" and card.image %}
+      <div class="mt-2 text-muted small">Текущее: {{ card.image.url }}</div>
+    {% endif %}
+  </div>
+
+  <button type="submit" class="btn btn-primary">
+    {% if mode == "edit" %}Сохранить изменения{% else %}Сохранить{% endif %}
+  </button>
+</form>
+{% endblock %}
